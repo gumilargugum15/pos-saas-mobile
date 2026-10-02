@@ -251,10 +251,3 @@ class _CategoryChips extends ConsumerWidget {
     );
   }
 }
-
-/// Shows the outcome of an add-to-cart action.
-void showCartResult(BuildContext context, CartResult result, Product product) {
-  if (result.isLimited) {
-    showQuickMessage(context, result.message!, isError: true);
-  }
-}
