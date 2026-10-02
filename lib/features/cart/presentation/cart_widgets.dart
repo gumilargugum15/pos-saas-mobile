@@ -9,26 +9,28 @@ import '../application/cart_controller.dart';
 
 /// Lines, totals and the checkout action. Used as the right pane on
 /// tablets and as the body of the cart screen on phones.
+Future<void> confirmClearCart(BuildContext context, WidgetRef ref) async {
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Kosongkan keranjang?'),
+      content: const Text('Semua produk di keranjang akan dihapus.'),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+        FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Kosongkan')),
+      ],
+    ),
+  );
+  if (ok ?? false) ref.read(cartControllerProvider.notifier).clear();
+}
+
 class CartPane extends ConsumerWidget {
-  const CartPane({super.key, this.onCheckout});
+  const CartPane({super.key, required this.onCheckout, this.showHeader = true});
 
-  /// Null until checkout is available (Phase 4).
-  final VoidCallback? onCheckout;
+  final VoidCallback onCheckout;
 
-  Future<void> _confirmClear(BuildContext context, WidgetRef ref) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Kosongkan keranjang?'),
-        content: const Text('Semua produk di keranjang akan dihapus.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Kosongkan')),
-        ],
-      ),
-    );
-    if (ok ?? false) ref.read(cartControllerProvider.notifier).clear();
-  }
+  /// False when the screen's app bar already shows the title (phone).
+  final bool showHeader;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,26 +40,27 @@ class CartPane extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  cart.isEmpty ? 'Keranjang' : 'Keranjang (${cart.itemCount})',
-                  style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+        if (showHeader)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    cart.isEmpty ? 'Keranjang' : 'Keranjang (${cart.itemCount})',
+                    style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                  ),
                 ),
-              ),
-              if (cart.isNotEmpty)
-                TextButton.icon(
-                  key: const Key('cart-clear'),
-                  onPressed: () => _confirmClear(context, ref),
-                  icon: const Icon(Icons.delete_sweep_outlined),
-                  label: const Text('Kosongkan'),
-                ),
-            ],
+                if (cart.isNotEmpty)
+                  TextButton.icon(
+                    key: const Key('cart-clear'),
+                    onPressed: () => confirmClearCart(context, ref),
+                    icon: const Icon(Icons.delete_sweep_outlined),
+                    label: const Text('Kosongkan'),
+                  ),
+              ],
+            ),
           ),
-        ),
         Expanded(
           child: cart.isEmpty
               ? const StatusView(
@@ -78,7 +81,7 @@ class CartPane extends ConsumerWidget {
             key: const Key('cart-checkout'),
             onPressed: cart.isEmpty ? null : onCheckout,
             style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(60)),
-            child: Text(onCheckout == null && cart.isNotEmpty ? 'CHECKOUT (segera tersedia)' : 'CHECKOUT'),
+            child: const Text('CHECKOUT'),
           ),
         ),
       ],
@@ -123,10 +126,7 @@ class CartLineTile extends ConsumerWidget {
                   Text(product.name, style: textTheme.titleSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 2),
                   Text('${ref.money(product.price)} × ${line.qty}', style: textTheme.bodySmall),
-                  Text(
-                    ref.money(line.gross),
-                    style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
-                  ),
+                  Text(ref.money(line.gross), style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
                 ],
               ),
             ),
@@ -189,27 +189,40 @@ class CartTotals extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
     Widget row(String label, String value, {bool strong = false}) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Row(
-            children: [
-              Expanded(child: Text(label, style: strong ? textTheme.titleMedium : textTheme.bodyMedium)),
-              Text(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Text(label, style: strong ? textTheme.titleMedium : textTheme.bodyMedium),
+          const SizedBox(width: 12),
+          // Large amounts / large system fonts shrink instead of overflowing.
+          Expanded(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
                 value,
                 style: strong
                     ? textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900)
                     : textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
-            ],
+            ),
           ),
-        );
+        ],
+      ),
+    );
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      decoration: BoxDecoration(border: Border(top: BorderSide(color: scheme.outlineVariant))),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: scheme.outlineVariant)),
+      ),
       child: Column(
         children: [
           row('Subtotal', ref.money(cart.subtotal)),
-          row('Diskon', cart.discountTotal.isZero ? ref.money(cart.discountTotal) : '-${ref.money(cart.discountTotal)}'),
+          row(
+            'Diskon',
+            cart.discountTotal.isZero ? ref.money(cart.discountTotal) : '-${ref.money(cart.discountTotal)}',
+          ),
           row('Pajak', ref.money(cart.taxTotal)),
           const Divider(height: 16),
           row('TOTAL', ref.money(cart.grandTotal), strong: true),

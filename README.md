@@ -19,8 +19,8 @@ Design and backend analysis: [`docs/`](docs/)
 |---|---|---|
 | 1 | Backend analysis and docs | Done |
 | 2 | Foundation: architecture, theme, routing, API client, auth, tenant, secure storage | Done |
-| 3 | Dashboard, products, categories, barcode, cart | Next |
-| 4 | Customer, checkout, payment, transactions | Planned |
+| 3 | Dashboard, products, categories, barcode, cart | Done |
+| 4 | Outlet, customer, checkout, payment, transactions | Done |
 | 5 | Receipt, Bluetooth thermal printer | Planned |
 | 6 | Extended tests | Planned |
 
@@ -56,6 +56,10 @@ lib/
 - **Storage:** token, active tenant and branch in `flutter_secure_storage`
   (Android Keystore). Passwords are never stored. Android backup is disabled.
 - **Money:** integer minor units (`Money`), formatting only through `CurrencyFormatter`.
+- **Checkout safety:** one request in flight; one `Idempotency-Key` per distinct
+  checkout, reused on re-send; a lost response is "unknown", resolved by looking
+  up recent server sales before anything is sent again; the cart is cleared only
+  after the server confirms the sale. Totals shown after payment are the server's.
 
 ## Setup
 

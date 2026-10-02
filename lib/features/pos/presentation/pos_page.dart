@@ -20,6 +20,7 @@ class PosPage extends ConsumerWidget {
 
   static const cartRoute = '/pos/cart';
   static const scanRoute = '/pos/scan';
+  static const checkoutRoute = '/pos/checkout';
 
   void _add(BuildContext context, WidgetRef ref, Product product) {
     final result = ref.read(cartControllerProvider.notifier).add(product);
@@ -67,7 +68,7 @@ class PosPage extends ConsumerWidget {
                 children: [
                   Expanded(child: catalog),
                   const VerticalDivider(width: 1),
-                  const SizedBox(width: 400, child: CartPane()),
+                  SizedBox(width: 400, child: CartPane(onCheckout: () => context.push(checkoutRoute))),
                 ],
               )
             : catalog,
@@ -78,14 +79,28 @@ class PosPage extends ConsumerWidget {
 }
 
 /// Phone-only cart screen.
-class CartPage extends StatelessWidget {
+class CartPage extends ConsumerWidget {
   const CartPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cart = ref.watch(cartControllerProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Keranjang')),
-      body: const SafeArea(child: CartPane()),
+      appBar: AppBar(
+        title: Text(cart.isEmpty ? 'Keranjang' : 'Keranjang (${cart.itemCount})'),
+        actions: [
+          if (cart.isNotEmpty)
+            TextButton.icon(
+              key: const Key('cart-clear'),
+              onPressed: () => confirmClearCart(context, ref),
+              icon: const Icon(Icons.delete_sweep_outlined),
+              label: const Text('Kosongkan'),
+            ),
+        ],
+      ),
+      body: SafeArea(
+        child: CartPane(showHeader: false, onCheckout: () => context.push(PosPage.checkoutRoute)),
+      ),
     );
   }
 }

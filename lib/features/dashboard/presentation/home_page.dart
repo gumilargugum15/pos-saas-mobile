@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/error/app_failure.dart';
 import '../../../core/widgets/common.dart';
 import '../../auth/application/session_controller.dart';
+import '../../outlet/outlet_controller.dart';
+import '../../outlet/outlet_picker.dart';
 import '../../settings/settings_providers.dart';
 import '../../tenant/presentation/switch_tenant.dart';
 import '../application/dashboard_providers.dart';
@@ -73,7 +75,7 @@ class HomePage extends ConsumerWidget {
                         children: [
                           _InfoRow(label: 'Kasir', value: user?.name ?? '-'),
                           _InfoRow(label: 'Perusahaan', value: tenant?.name ?? '-'),
-                          _InfoRow(label: 'Outlet', value: user?.branchName ?? 'Belum ditentukan'),
+                          const _OutletRow(),
                         ],
                       ),
                     ),
@@ -103,6 +105,16 @@ class HomePage extends ConsumerWidget {
                     childAspectRatio: 2.2,
                     children: [
                       _MenuTile(icon: Icons.point_of_sale, label: 'POS', onTap: () => context.push(posRoute)),
+                      _MenuTile(
+                        icon: Icons.receipt_long,
+                        label: 'Transaksi',
+                        onTap: () => context.push('/transactions'),
+                      ),
+                      _MenuTile(
+                        icon: Icons.people_outline,
+                        label: 'Pelanggan',
+                        onTap: () => context.push('/customers'),
+                      ),
                       _MenuTile(
                         icon: Icons.inventory_2_outlined,
                         label: 'Produk',
@@ -252,6 +264,34 @@ class _InfoRow extends StatelessWidget {
           Expanded(child: Text(value, style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700))),
         ],
       ),
+    );
+  }
+}
+
+class _OutletRow extends ConsumerWidget {
+  const _OutletRow();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final outlet = ref.watch(outletControllerProvider);
+    final value = outlet.when(
+      loading: () => 'Memuat...',
+      error: (_, _) => 'Gagal dimuat',
+      data: (o) => o.selected?.name ?? (o.options.isEmpty ? 'Tanpa outlet' : 'Belum dipilih'),
+    );
+    final state = outlet.value;
+    final canPick = state != null && (state.canChange || state.needsSelection);
+
+    return Row(
+      children: [
+        Expanded(child: _InfoRow(label: 'Outlet', value: value)),
+        if (canPick)
+          TextButton(
+            key: const Key('dashboard-outlet'),
+            onPressed: () => showOutletPicker(context, ref, state),
+            child: Text(state.selected == null ? 'Pilih' : 'Ganti'),
+          ),
+      ],
     );
   }
 }
