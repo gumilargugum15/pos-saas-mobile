@@ -1,5 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'money.dart';
 
 /// The one place money becomes text. Defaults match the backend
@@ -79,7 +77,3 @@ class CurrencyFormatter {
     return buffer.toString();
   }
 }
-
-/// Replaced with the settings-based formatter once `/settings` is loaded
-/// (Phase 3); the defaults already match the backend defaults.
-final currencyFormatterProvider = Provider<CurrencyFormatter>((ref) => const CurrencyFormatter());

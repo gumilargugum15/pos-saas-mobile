@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/auth/application/session_controller.dart';
+import '../features/barcode/presentation/scanner_page.dart';
 import '../features/auth/presentation/access_denied_page.dart';
 import '../features/auth/presentation/login_page.dart';
 import '../features/auth/presentation/splash_page.dart';
 import '../features/dashboard/presentation/home_page.dart';
+import '../features/pos/presentation/pos_page.dart';
+import '../features/products/presentation/products_page.dart';
 import '../features/tenant/presentation/tenant_picker_page.dart';
 
 abstract final class Routes {
@@ -15,6 +18,8 @@ abstract final class Routes {
   static const tenant = '/tenant';
   static const denied = '/denied';
   static const home = '/';
+  static const pos = '/pos';
+  static const products = '/products';
 
   /// Screens owned by the session flow; a ready session never stays on them.
   static const gates = {splash, login, tenant, denied};
@@ -48,6 +53,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.tenant, builder: (_, _) => const TenantPickerPage()),
       GoRoute(path: Routes.denied, builder: (_, _) => const AccessDeniedPage()),
       GoRoute(path: Routes.home, builder: (_, _) => const HomePage()),
+      GoRoute(
+        path: Routes.pos,
+        builder: (_, _) => const PosPage(),
+        routes: [
+          GoRoute(path: 'cart', builder: (_, _) => const CartPage()),
+          GoRoute(path: 'scan', builder: (_, _) => const ScannerPage()),
+        ],
+      ),
+      GoRoute(path: Routes.products, builder: (_, _) => const ProductsPage()),
     ],
   );
 

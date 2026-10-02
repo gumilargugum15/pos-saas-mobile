@@ -26,6 +26,15 @@ abstract final class Json {
 
   static List<String>? asStringListOrNull(Object? value) => value is List ? asStringList(value) : null;
 
+  /// A DECIMAL(5,2) percentage as an exact integer in hundredths
+  /// (11 → 1100, 12.5 → 1250), for integer money math.
+  static int asHundredths(Object? value) => switch (value) {
+        int v => v * 100,
+        num v => (v * 100).round(),
+        String v => ((double.tryParse(v) ?? 0) * 100).round(),
+        _ => 0,
+      };
+
   static Map<String, dynamic> asMap(Object? value) =>
       value is Map ? value.cast<String, dynamic>() : const {};
 }
