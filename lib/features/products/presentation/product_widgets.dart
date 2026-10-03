@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/media_url.dart';
 import '../../../domain/entities/product.dart';
 import '../../settings/settings_providers.dart';
 
-class ProductImage extends StatelessWidget {
+class ProductImage extends ConsumerWidget {
   const ProductImage({super.key, required this.product, this.size});
 
   final Product product;
   final double? size;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
     final placeholder = Container(
       color: scheme.surfaceContainerHighest,
@@ -22,7 +24,7 @@ class ProductImage extends StatelessWidget {
         style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: scheme.onSurfaceVariant),
       ),
     );
-    final url = product.imageUrl;
+    final url = MediaUrl.resolve(product.imageUrl, ref.watch(appConfigProvider).apiBaseUrl);
     final child = url == null
         ? placeholder
         : Image.network(
