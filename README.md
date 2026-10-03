@@ -22,7 +22,7 @@ Design and backend analysis: [`docs/`](docs/)
 | 3 | Dashboard, products, categories, barcode, cart | Done |
 | 4 | Outlet, customer, checkout, payment, transactions | Done |
 | 5 | Receipt, Bluetooth thermal printer | Done |
-| 6 | Extended tests | Planned |
+| 6 | Tests (unit, repository, widget, integration), docs | Done |
 
 ## Requirements
 
@@ -106,6 +106,29 @@ Login uses the backend user's **email + password**. The account needs the
 `manage-sales` permission (role `Kasir`, or Owner/Admin) and an active tenant
 membership whose plan includes the `sales` module; otherwise the app shows
 *Akses Ditolak*.
+
+## Testing
+
+```bash
+flutter analyze
+flutter test                                    # unit, repository and widget tests
+flutter test integration_test -d <device-id>    # full cashier journey on a device/emulator
+```
+
+Tests run against an in-memory fake of the Laravel API (`test/helpers/fake_backend.dart`),
+a fake printer and in-memory secure storage — no server, Bluetooth or keystore needed.
+
+| Area | Where |
+|---|---|
+| Config, error mapping, API client (headers, envelope, retries, 401/tenant events) | `test/core/` |
+| Money & currency, cart totals vs. backend formula, barcode matching, access rules | `test/core/utils/`, `test/domain/` |
+| Repositories (catalog, sales, customers, branches) | `test/data/` |
+| Session: login ok/failed, token expired, logout, tenant picker, access denied | `test/features/auth/` |
+| Cart, POS screen (phone & tablet), hardware scanner | `test/features/cart/`, `test/features/pos/` |
+| Checkout: cash, insufficient cash, success, server errors, double tap, timeout/idempotency, outlet | `test/features/checkout/` |
+| History filters, receipt layout/ESC-POS, printing & sharing | `test/features/transactions/`, `test/features/receipt/` |
+| Permissions (no admin endpoints/screens, customer creation) and tenant isolation | `test/features/permission_test.dart`, `test/features/tenant_isolation_test.dart` |
+| End-to-end on a device | `integration_test/cashier_flow_test.dart` |
 
 ## Build APK
 

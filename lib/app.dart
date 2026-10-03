@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/app_theme.dart';
+import 'core/widgets/feedback.dart';
 import 'routing/app_router.dart';
 
 class KagoemPosApp extends ConsumerWidget {
@@ -13,6 +14,7 @@ class KagoemPosApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Kagoem POS',
       debugShowCheckedModeBanner: false,
+      scaffoldMessengerKey: rootMessengerKey,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       // A till is used in bright shops: the high-contrast light theme is the

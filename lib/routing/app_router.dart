@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/widgets/feedback.dart';
 import '../features/auth/application/session_controller.dart';
 import '../features/barcode/presentation/scanner_page.dart';
 import '../features/checkout/presentation/checkout_page.dart';
@@ -53,6 +54,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
   final router = GoRouter(
     initialLocation: Routes.splash,
+    observers: [ClearMessagesOnNavigation()],
     refreshListenable: refresh,
     redirect: (context, state) => sessionRedirect(refresh.value, state.matchedLocation),
     routes: [
