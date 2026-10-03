@@ -41,13 +41,22 @@ void main() {
       }
     });
 
-    test('the only writes are login/logout, checkout and customer creation', () {
+    test('the only writes are session, checkout, customer creation and the cash drawer', () {
       final writes = RegExp(r"_api\.(post|put)\(\s*'([^']+)'");
       final found = {
         for (final s in sources)
           for (final m in writes.allMatches(s.code)) '${m.group(1)!.toUpperCase()} ${m.group(2)}',
       };
-      expect(found, {'POST /auth/login', 'POST /auth/logout', 'POST /sales', 'POST /customers'});
+      expect(found, {
+        'POST /auth/login',
+        'POST /auth/logout',
+        'POST /sales',
+        'POST /customers',
+        // Drawer (operate-cash-drawer): open/close own shift, cash in/out.
+        'POST /shifts',
+        r'POST /shifts/$shiftId/close',
+        'POST /cash-transactions',
+      });
     });
 
     test('no admin screens are routed', () {

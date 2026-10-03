@@ -31,7 +31,7 @@ Date: 2026-10-03 · Branch: `feature/testing` (Phases 1–5 already merged to `m
 | Transaction history | ✅ | Invoice search, date presets/range, method/status filters, detail |
 | Receipt | ✅ | Web-identical layout, 58/80 mm, preview, share (text), reprint |
 | Printer | ✅ | `PrinterService` → `BluetoothPrinterService`; settings, test print; errors never break a sale |
-| Shift / cash drawer | ❌ Not built | Decision D3 proposed it as an optional menu; not implemented (see next tasks) |
+| Shift / cash drawer | ✅ | Open shift with float, cash in/out (backend categories), close with physical count; server expected balance & variance; optional (selling does not require it, as on the web) |
 | Hold cart | ❌ Not built | No backend support; would be device-local |
 | Offline mode | ❌ By design | Online only; layers allow a local data source later. No offline sales without a sync design |
 
@@ -60,6 +60,9 @@ Branch `feature/sales-idempotency` (commit `0470c76`, **not merged yet**):
 | GET | `/categories` | Category chips |
 | GET | `/branches` | Outlet selection |
 | GET / POST | `/customers` | Customer search / create |
+| GET | `/shifts/current` | Drawer status and live totals |
+| POST | `/shifts`, `/shifts/{id}/close` | Open / close shift |
+| GET / POST | `/cash-transactions` | Cash in/out of the open shift |
 | POST | `/sales` | Checkout |
 | GET | `/sales`, `/sales/{id}` | History, detail, unknown-outcome recovery, reprint |
 
@@ -74,7 +77,7 @@ Dev: `flutter_test`, `integration_test` (SDK), `flutter_lints`.
 1. **Backend PR not merged.** Until `feature/sales-idempotency` is merged and migrated
    everywhere, safe re-send after a timeout falls back to manual verification, and the
    history date filter is ignored by the server.
-2. **Shift / cash drawer** (open/close shift, cash in/out) is not in the app.
+2. **Shift live totals** come from the backend, whose cash-sales figure counts all cash sales of the tenant during the shift window (not only the shift owner's) — see PROJECT_ANALYSIS §9.7.
 3. **Not yet verified on physical hardware:** camera scanning and Bluetooth printing were
    tested with fakes and an emulator only.
 4. **Release signing:** without `android/key.properties` the APK uses the debug key.
@@ -91,6 +94,6 @@ Dev: `flutter_test`, `integration_test` (SDK), `flutter_lints`.
 1. Merge `kagoem-pos-saas` `feature/sales-idempotency` and run the migration on staging/production.
 2. Field test on the target phones (Infinix HOT 60 Pro+) with a real thermal printer and real barcodes.
 3. Create the release keystore and `android/key.properties`; build with `--split-per-abi`.
-4. Add the shift / cash-drawer module (`/shifts`, `/cash-transactions`) if cashiers must open/close drawers.
+4. Backend: scope the shift's cash-sales total to the shift owner/branch (affects expected balance).
 5. Backend: per-tenant invoice sequence (fix the race), per-tenant settings, optional `user_id` filter on `/sales`.
 6. Optional: device-local hold cart; image disk cache; PDF receipt sharing.
