@@ -41,6 +41,7 @@ class HomePage extends ConsumerWidget {
             tooltip: 'Menu',
             onSelected: (value) => switch (value) {
               'switch' => switchTenantOrNotify(context, ref),
+              'printer' => context.push('/printer'),
               'logout' => _logout(context, ref),
               _ => null,
             },
@@ -50,6 +51,10 @@ class HomePage extends ConsumerWidget {
                   value: 'switch',
                   child: ListTile(leading: Icon(Icons.swap_horiz), title: Text('Ganti Perusahaan')),
                 ),
+              const PopupMenuItem(
+                value: 'printer',
+                child: ListTile(leading: Icon(Icons.print), title: Text('Printer Struk')),
+              ),
               const PopupMenuItem(
                 value: 'logout',
                 child: ListTile(leading: Icon(Icons.logout), title: Text('Keluar')),

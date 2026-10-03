@@ -21,7 +21,7 @@ Design and backend analysis: [`docs/`](docs/)
 | 2 | Foundation: architecture, theme, routing, API client, auth, tenant, secure storage | Done |
 | 3 | Dashboard, products, categories, barcode, cart | Done |
 | 4 | Outlet, customer, checkout, payment, transactions | Done |
-| 5 | Receipt, Bluetooth thermal printer | Planned |
+| 5 | Receipt, Bluetooth thermal printer | Done |
 | 6 | Extended tests | Planned |
 
 ## Requirements
@@ -126,6 +126,19 @@ keyPassword=...
 Without that file the release APK is signed with the debug key — fine for
 internal testing, **not** for distribution.
 
+## Receipt printing
+
+- Pair the Bluetooth thermal printer (58 mm or 80 mm, ESC/POS) in **Android
+  Settings → Bluetooth** first.
+- In the app: menu ⋮ → **Printer Struk** → choose the printer → **TEST PRINT**.
+  Paper width follows the store setting `receipt_paper_size` unless overridden.
+- Print / share from the success screen, or reprint from
+  **Transaksi → detail → 🧾**.
+- Layout matches the web POS receipt (`frontend/src/lib/escpos.ts`); the tenant
+  and outlet are printed under the store name.
+- Architecture: `ReceiptFormatter` (layout) → `EscPosEncoder` (bytes) →
+  `PrinterService` (transport). Only `BluetoothPrinterService` knows the plugin.
+
 ## Troubleshooting
 
 | Symptom | Cause / fix |
@@ -137,3 +150,6 @@ internal testing, **not** for distribution.
 | "…tidak mencakup fitur Penjualan" | The tenant's plan has no `sales` module. |
 | Logged out after reinstall / device restore | Expected: the Keystore-encrypted session is not portable. |
 | 429 "Terlalu banyak percobaan" at login | Backend allows 5 logins/minute per IP+email. |
+| Printer not listed | Pair it in Android Bluetooth settings first; allow "Perangkat di sekitar" permission. |
+| "Tidak dapat terhubung ke printer" | Printer off, out of range, or connected to another phone. |
+| Strange characters on paper | The printer uses a single-byte code page; non-Latin characters print as `?`. |

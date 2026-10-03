@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../domain/entities/sale.dart';
+import '../../receipt/presentation/receipt_widgets.dart';
 import '../../settings/settings_providers.dart';
 import '../application/checkout_controller.dart';
 
@@ -58,7 +59,9 @@ class SaleSuccessPage extends ConsumerWidget {
                     ),
                   const SizedBox(height: 24),
                   SaleSummaryCard(sale: sale),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+                  ReceiptActionButtons(sale: sale),
+                  const SizedBox(height: 16),
                   FilledButton.icon(
                     key: const Key('new-transaction'),
                     autofocus: true,

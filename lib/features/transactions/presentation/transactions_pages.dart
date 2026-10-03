@@ -268,7 +268,17 @@ class TransactionDetailPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sale = ref.watch(saleDetailProvider(saleId));
     return Scaffold(
-      appBar: AppBar(title: const Text('Detail Transaksi')),
+      appBar: AppBar(
+        title: const Text('Detail Transaksi'),
+        actions: [
+          IconButton(
+            key: const Key('open-receipt'),
+            tooltip: 'Struk (cetak ulang / bagikan)',
+            onPressed: () => context.push('/transactions/$saleId/receipt'),
+            icon: const Icon(Icons.receipt_long),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: sale.when(
           loading: () => const Center(child: CircularProgressIndicator()),
