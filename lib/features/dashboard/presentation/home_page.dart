@@ -7,6 +7,7 @@ import '../../../core/widgets/common.dart';
 import '../../auth/application/session_controller.dart';
 import '../../outlet/outlet_controller.dart';
 import '../../outlet/outlet_picker.dart';
+import '../../shift/shift_controller.dart';
 import '../../settings/settings_providers.dart';
 import '../../tenant/presentation/switch_tenant.dart';
 import '../application/dashboard_providers.dart';
@@ -96,6 +97,7 @@ class HomePage extends ConsumerWidget {
                       textStyle: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
                     ),
                   ),
+                  const _ShiftStatus(),
                   const SizedBox(height: 24),
                   const _StatsSection(),
                   const SizedBox(height: 24),
@@ -297,6 +299,40 @@ class _OutletRow extends ConsumerWidget {
             child: Text(state.selected == null ? 'Pilih' : 'Ganti'),
           ),
       ],
+    );
+  }
+}
+
+/// Drawer status for users with `operate-cash-drawer`. Informational: an
+/// open shift is not required to sell (same as the web POS).
+class _ShiftStatus extends ConsumerWidget {
+  const _ShiftStatus();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!(ref.watch(cashierCapabilitiesProvider)?.canUseCashDrawer ?? false)) return const SizedBox.shrink();
+    final overview = ref.watch(shiftControllerProvider);
+    final o = overview.value;
+    final subtitle = overview.isLoading
+        ? 'Memuat...'
+        : o == null
+            ? 'Status shift tidak dapat dimuat'
+            : o.isOpen
+                ? 'Shift aktif · ekspektasi kas ${o.live == null ? '-' : ref.money(o.live!.expectedBalance)}'
+                : 'Belum ada shift aktif';
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Card(
+        child: ListTile(
+          key: const Key('dashboard-shift'),
+          leading: Icon(o?.isOpen ?? false ? Icons.lock_open : Icons.lock_clock),
+          title: const Text('Shift & Kas', style: TextStyle(fontWeight: FontWeight.w700)),
+          subtitle: Text(subtitle),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/shift'),
+        ),
+      ),
     );
   }
 }

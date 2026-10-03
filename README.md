@@ -23,6 +23,7 @@ Design and backend analysis: [`docs/`](docs/)
 | 4 | Outlet, customer, checkout, payment, transactions | Done |
 | 5 | Receipt, Bluetooth thermal printer | Done |
 | 6 | Tests (unit, repository, widget, integration), docs | Done |
+| + | Shift & cash drawer (open, cash in/out, close with count) | Done |
 
 ## Requirements
 

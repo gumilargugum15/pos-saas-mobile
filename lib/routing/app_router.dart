@@ -10,6 +10,7 @@ import '../features/checkout/presentation/sale_success_page.dart';
 import '../features/customers/presentation/customers_page.dart';
 import '../features/receipt/presentation/printer_settings_page.dart';
 import '../features/receipt/presentation/receipt_widgets.dart';
+import '../features/shift/shift_page.dart';
 import '../features/transactions/presentation/transactions_pages.dart';
 import '../features/auth/presentation/access_denied_page.dart';
 import '../features/auth/presentation/login_page.dart';
@@ -96,6 +97,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(path: 'customers', builder: (_, _) => const CustomersPage()),
           GoRoute(path: 'printer', builder: (_, _) => const PrinterSettingsPage()),
+          GoRoute(path: 'shift', builder: (_, _) => const ShiftPage()),
         ],
       ),
     ],
