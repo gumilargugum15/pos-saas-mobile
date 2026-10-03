@@ -4,6 +4,12 @@ import 'package:go_router/go_router.dart';
 
 import '../features/auth/application/session_controller.dart';
 import '../features/barcode/presentation/scanner_page.dart';
+import '../features/checkout/presentation/checkout_page.dart';
+import '../features/checkout/presentation/sale_success_page.dart';
+import '../features/customers/presentation/customers_page.dart';
+import '../features/receipt/presentation/printer_settings_page.dart';
+import '../features/receipt/presentation/receipt_widgets.dart';
+import '../features/transactions/presentation/transactions_pages.dart';
 import '../features/auth/presentation/access_denied_page.dart';
 import '../features/auth/presentation/login_page.dart';
 import '../features/auth/presentation/splash_page.dart';
@@ -20,6 +26,8 @@ abstract final class Routes {
   static const home = '/';
   static const pos = '/pos';
   static const products = '/products';
+  static const transactions = '/transactions';
+  static const customers = '/customers';
 
   /// Screens owned by the session flow; a ready session never stays on them.
   static const gates = {splash, login, tenant, denied};
@@ -52,16 +60,42 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.login, builder: (_, _) => const LoginPage()),
       GoRoute(path: Routes.tenant, builder: (_, _) => const TenantPickerPage()),
       GoRoute(path: Routes.denied, builder: (_, _) => const AccessDeniedPage()),
-      GoRoute(path: Routes.home, builder: (_, _) => const HomePage()),
+      // App screens nest under home so "back" always leads towards it.
       GoRoute(
-        path: Routes.pos,
-        builder: (_, _) => const PosPage(),
+        path: Routes.home,
+        builder: (_, _) => const HomePage(),
         routes: [
-          GoRoute(path: 'cart', builder: (_, _) => const CartPage()),
-          GoRoute(path: 'scan', builder: (_, _) => const ScannerPage()),
+          GoRoute(
+            path: 'pos',
+            builder: (_, _) => const PosPage(),
+            routes: [
+              GoRoute(path: 'cart', builder: (_, _) => const CartPage()),
+              GoRoute(path: 'scan', builder: (_, _) => const ScannerPage()),
+              GoRoute(path: 'checkout', builder: (_, _) => const CheckoutPage()),
+              GoRoute(path: 'success', builder: (_, _) => const SaleSuccessPage()),
+            ],
+          ),
+          GoRoute(path: 'products', builder: (_, _) => const ProductsPage()),
+          GoRoute(
+            path: 'transactions',
+            builder: (_, _) => const TransactionsPage(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (_, state) => TransactionDetailPage(saleId: int.parse(state.pathParameters['id']!)),
+                routes: [
+                  GoRoute(
+                    path: 'receipt',
+                    builder: (_, state) => ReceiptPage(saleId: int.parse(state.pathParameters['id']!)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          GoRoute(path: 'customers', builder: (_, _) => const CustomersPage()),
+          GoRoute(path: 'printer', builder: (_, _) => const PrinterSettingsPage()),
         ],
       ),
-      GoRoute(path: Routes.products, builder: (_, _) => const ProductsPage()),
     ],
   );
 
