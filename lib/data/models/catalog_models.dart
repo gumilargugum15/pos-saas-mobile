@@ -24,6 +24,29 @@ abstract final class ProductModel {
         isActive: Json.asBool(json['is_active'], fallback: true),
       );
 
+  /// The inverse of [fromJson] (same shape as `ProductResource`), used to
+  /// keep product snapshots of held carts on the device. Amounts are written
+  /// as decimal strings so they round-trip exactly.
+  static Map<String, dynamic> toJson(Product p) => {
+        'id': p.id,
+        'name': p.name,
+        'sku': p.sku,
+        'barcode': p.barcode,
+        'category_id': p.categoryId,
+        'category_name': p.categoryName,
+        'unit_name': p.unitName,
+        'price': p.price.toDecimalString(),
+        'stock': p.stock,
+        'min_stock': p.minStock,
+        'tax_percentage': _percent(p.taxHundredths),
+        'discount_percentage': _percent(p.discountHundredths),
+        'image_url': p.imageUrl,
+        'is_active': p.isActive,
+      };
+
+  static String _percent(int hundredths) =>
+      '${hundredths ~/ 100}.${(hundredths % 100).toString().padLeft(2, '0')}';
+
   static String? _blankToNull(Object? value) {
     final s = Json.asStringOrNull(value)?.trim();
     return s == null || s.isEmpty ? null : s;

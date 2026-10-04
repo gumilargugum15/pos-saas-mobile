@@ -7,6 +7,7 @@ import '../../../core/widgets/feedback.dart';
 import '../../../domain/entities/product.dart';
 import '../../cart/application/cart_controller.dart';
 import '../../cart/presentation/cart_widgets.dart';
+import '../../cart/presentation/held_carts_widgets.dart';
 import '../../products/presentation/catalog_pane.dart';
 import '../../products/presentation/product_widgets.dart';
 import '../application/scan_to_cart.dart';
@@ -60,7 +61,7 @@ class PosPage extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Transaksi Baru')),
+      appBar: AppBar(title: const Text('Transaksi Baru'), actions: const [HeldCartsButton(), SizedBox(width: 4)]),
       body: SafeArea(
         child: twoPane
             ? Row(

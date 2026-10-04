@@ -32,7 +32,7 @@ Date: 2026-10-03 · Branch: `feature/testing` (Phases 1–5 already merged to `m
 | Receipt | ✅ | Web-identical layout, 58/80 mm, preview, share (text), reprint |
 | Printer | ✅ | `PrinterService` → `BluetoothPrinterService`; settings, test print; errors never break a sale |
 | Shift / cash drawer | ✅ | Open shift with float, cash in/out (backend categories), close with physical count; server expected balance & variance; optional (selling does not require it, as on the web) |
-| Hold cart | ❌ Not built | No backend support; would be device-local |
+| Hold transaction | ✅ | Like the web POS "Hold/Resume", stored on the device per tenant + cashier (max 20), survives restarts; resuming holds the current cart first and re-checks price/availability/stock with the server |
 | Offline mode | ❌ By design | Online only; layers allow a local data source later. No offline sales without a sync design |
 
 ## Backend changes (kagoem-pos-saas)
@@ -96,4 +96,4 @@ Dev: `flutter_test`, `integration_test` (SDK), `flutter_lints`.
 3. Create the release keystore and `android/key.properties`; build with `--split-per-abi`.
 4. Backend: scope the shift's cash-sales total to the shift owner/branch (affects expected balance).
 5. Backend: per-tenant invoice sequence (fix the race), per-tenant settings, optional `user_id` filter on `/sales`.
-6. Optional: device-local hold cart; image disk cache; PDF receipt sharing.
+6. Optional: image disk cache; PDF receipt sharing.
