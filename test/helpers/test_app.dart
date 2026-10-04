@@ -10,15 +10,25 @@ import 'fake_backend.dart';
 
 const testConfig = AppConfig(environment: AppEnvironment.development, apiBaseUrl: 'http://pos.test/api/v1');
 
+/// The single-store pos-cashier build (Warung Epon).
+const cashierConfig = AppConfig(
+  environment: AppEnvironment.development,
+  apiBaseUrl: 'http://pos.test/api/v1',
+  variant: AppVariant.cashier,
+  appName: 'Warung Epon',
+  salesDateFilter: false,
+);
+
 /// Real providers (repositories, session controller) on top of a fake HTTP
 /// backend and in-memory secure storage.
 class TestHarness {
-  TestHarness({SessionStore? session})
+  TestHarness({SessionStore? session, this.config = testConfig})
       : backend = FakeBackend(),
         store = InMemoryKeyValueStore() {
     this.session = session ?? SessionStore(store);
   }
 
+  final AppConfig config;
   final FakeBackend backend;
   final InMemoryKeyValueStore store;
   late final SessionStore session;
@@ -27,11 +37,11 @@ class TestHarness {
   final shared = <({String text, String subject})>[];
 
   List<Override> get overrides => [
-        appConfigProvider.overrideWithValue(testConfig),
+        appConfigProvider.overrideWithValue(config),
         sessionStoreProvider.overrideWithValue(session),
         apiClientProvider.overrideWith((ref) {
           final client = ApiClient(
-            baseUrl: testConfig.apiBaseUrl,
+            baseUrl: config.apiBaseUrl,
             session: session,
             adapter: backend,
             retryDelay: Duration.zero,

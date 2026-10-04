@@ -4,6 +4,7 @@ import 'package:flutter/material.dart' show DateTimeRange;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/error/app_failure.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/network/api_response.dart';
 import '../../../data/repositories/sales_repository_impl.dart';
 import '../../../domain/entities/sale.dart';
@@ -121,7 +122,11 @@ class TransactionsController extends Notifier<TransactionsState> {
   TransactionsState build() {
     ref.watch(salesRepositoryProvider);
     Future.microtask(_reload);
-    return const TransactionsState();
+    // Without server-side date filtering, start from "all" rather than
+    // showing a "today" chip that the backend would silently ignore.
+    return ref.read(appConfigProvider).salesDateFilter
+        ? const TransactionsState()
+        : const TransactionsState(filter: TransactionsFilter(datePreset: DatePreset.all));
   }
 
   void setFilter(TransactionsFilter filter) {
@@ -175,7 +180,8 @@ class TransactionsController extends Notifier<TransactionsState> {
       branchId = null;
     }
     final filter = state.filter;
-    final (from, to) = filter.dateRange(DateTime.now());
+    final (from, to) =
+        ref.read(appConfigProvider).salesDateFilter ? filter.dateRange(DateTime.now()) : (null, null);
     return ref.read(salesRepositoryProvider).list(
           SalesQuery(
             search: filter.search,

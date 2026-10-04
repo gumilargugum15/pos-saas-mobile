@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/printing/bluetooth_printer_service.dart';
+import '../../core/config/app_config.dart';
 import '../../core/printing/escpos_encoder.dart';
 import '../../core/printing/printer_service.dart';
 import '../../core/storage/session_store.dart';
@@ -97,7 +98,7 @@ class ReceiptActions {
   ReceiptHeader get header {
     final storeName = _ref.read(settingsProvider).value?['company_name'];
     return ReceiptHeader(
-      storeName: storeName == null || storeName.trim().isEmpty ? 'Kagoem POS' : storeName.trim(),
+      storeName: storeName == null || storeName.trim().isEmpty ? _ref.read(appConfigProvider).appName : storeName.trim(),
       tenantName: _ref.read(activeTenantProvider)?.name,
     );
   }

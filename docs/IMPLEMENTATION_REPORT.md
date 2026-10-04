@@ -32,6 +32,7 @@ Date: 2026-10-03 · Branch: `feature/testing` (Phases 1–5 already merged to `m
 | Receipt | ✅ | Web-identical layout, 58/80 mm, preview, share (text), reprint |
 | Printer | ✅ | `PrinterService` → `BluetoothPrinterService`; settings, test print; errors never break a sale |
 | Shift / cash drawer | ✅ | Open shift with float, cash in/out (backend categories), close with physical count; server expected balance & variance; optional (selling does not require it, as on the web) |
+| Variants | ✅ | One codebase, two Android flavors: `saas` (Kagoem POS SaaS, multi-tenant) and `cashier` (pos-cashier / Warung Epon, single store: no tenant step, no history date filter) |
 | Hold transaction | ✅ | Like the web POS "Hold/Resume", stored on the device per tenant + cashier (max 20), survives restarts; resuming holds the current cart first and re-checks price/availability/stock with the server |
 | Offline mode | ❌ By design | Online only; layers allow a local data source later. No offline sales without a sync design |
 

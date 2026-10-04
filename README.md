@@ -63,6 +63,30 @@ lib/
   up recent server sales before anything is sent again; the cart is cleared only
   after the server confirms the sale. Totals shown after payment are the server's.
 
+## Variants (one codebase, two apps)
+
+| Flavor | App | Backend | Application id |
+|---|---|---|---|
+| `saas` | Kagoem POS | `kagoem-pos-saas` (multi-tenant) | `id.kagoem.kagoem_pos_mobile` |
+| `cashier` | Warung Epon | `pos-cashier` (single store) | `id.kagoem.poscashier` |
+
+Both share every feature (POS, checkout, receipts, printer, shift, hold).
+The `cashier` variant skips tenant selection (no `/tenants`, no `X-Tenant-ID`)
+and, because that backend has no sales date filter yet, hides the history
+date chips (`SALES_DATE_FILTER=false`). Checkout idempotency is detected at
+runtime; without it a timeout falls back to manual verification.
+
+```bash
+# Kagoem POS
+flutter build apk --release --split-per-abi --flavor saas    --dart-define-from-file=env/production.json
+# Warung Epon
+flutter build apk --release --split-per-abi --flavor cashier --dart-define-from-file=env/cashier-production.json
+```
+
+Extra env keys for `cashier`: `APP_NAME` (store name shown in the app) and
+`SALES_DATE_FILTER` (`true` once the pos-cashier backend forwards
+`date_from`/`date_to`). See `env/cashier-*.example.json`.
+
 ## Setup
 
 ```bash
@@ -99,7 +123,7 @@ adb reverse tcp:8001 tcp:8001   # then API_BASE_URL=http://127.0.0.1:8001/api/v1
 ## Development
 
 ```bash
-flutter run --dart-define-from-file=env/development.json
+flutter run --flavor saas --dart-define-from-file=env/development.json
 flutter analyze
 flutter test
 ```
@@ -114,7 +138,7 @@ membership whose plan includes the `sales` module; otherwise the app shows
 ```bash
 flutter analyze
 flutter test                                    # unit, repository and widget tests
-flutter test integration_test -d <device-id>    # full cashier journey on a device/emulator
+flutter test integration_test --flavor saas -d <device-id>   # full cashier journey on a device
 ```
 
 Tests run against an in-memory fake of the Laravel API (`test/helpers/fake_backend.dart`),
@@ -135,7 +159,7 @@ a fake printer and in-memory secure storage — no server, Bluetooth or keystore
 ## Build APK
 
 ```bash
-flutter build apk --release --dart-define-from-file=env/production.json
+flutter build apk --release --split-per-abi --flavor saas --dart-define-from-file=env/production.json
 # output: build/app/outputs/flutter-apk/app-release.apk
 ```
 

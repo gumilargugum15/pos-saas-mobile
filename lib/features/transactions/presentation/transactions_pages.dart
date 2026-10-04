@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/error/app_failure.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/feedback.dart';
 import '../../../domain/entities/sale.dart';
@@ -82,31 +83,36 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                 onChanged: (value) {
                   _debounce?.cancel();
                   _debounce = Timer(const Duration(milliseconds: 400), () {
-                    _controller.setFilter(ref.read(transactionsControllerProvider).filter.copyWith(search: value.trim()));
+                    _controller.setFilter(
+                      ref.read(transactionsControllerProvider).filter.copyWith(search: value.trim()),
+                    );
                   });
                 },
               ),
             ),
-            SizedBox(
-              height: 52,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                children: [
-                  for (final preset in DatePreset.values)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(preset == DatePreset.custom && custom != null
-                            ? '${_shortDate.format(custom.start)}–${_shortDate.format(custom.end)}'
-                            : preset.label),
-                        selected: filter.datePreset == preset,
-                        onSelected: (_) => _pickDate(filter, preset),
+            if (ref.watch(appConfigProvider).salesDateFilter)
+              SizedBox(
+                height: 52,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  children: [
+                    for (final preset in DatePreset.values)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(
+                            preset == DatePreset.custom && custom != null
+                                ? '${_shortDate.format(custom.start)}–${_shortDate.format(custom.end)}'
+                                : preset.label,
+                          ),
+                          selected: filter.datePreset == preset,
+                          onSelected: (_) => _pickDate(filter, preset),
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
             SizedBox(
               height: 52,
               child: ListView(
@@ -223,11 +229,7 @@ class _SaleTile extends ConsumerWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       title: Text(sale.invoiceNumber, style: const TextStyle(fontWeight: FontWeight.w700)),
       subtitle: Text(
-        [
-          if (sale.createdAt != null) _time.format(sale.createdAt!),
-          sale.paymentLabel,
-          sale.customerLabel,
-        ].join(' · '),
+        [if (sale.createdAt != null) _time.format(sale.createdAt!), sale.paymentLabel, sale.customerLabel].join(' · '),
       ),
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -255,7 +257,10 @@ class SaleStatusBadge extends StatelessWidget {
       SaleStatus.refunded || SaleStatus.voided => scheme.error,
       SaleStatus.pending => BrandColors.warning,
     };
-    return Text(status.label.toUpperCase(), style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12));
+    return Text(
+      status.label.toUpperCase(),
+      style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12),
+    );
   }
 }
 
@@ -304,14 +309,14 @@ class _SaleDetail extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     Widget row(String label, String value, {bool strong = false}) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: 3),
-          child: Row(
-            children: [
-              Expanded(child: Text(label)),
-              Text(value, style: strong ? textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900) : null),
-            ],
-          ),
-        );
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Expanded(child: Text(label)),
+          Text(value, style: strong ? textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900) : null),
+        ],
+      ),
+    );
 
     return Center(
       child: ConstrainedBox(

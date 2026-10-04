@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/error/app_failure.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/kagoem_logo.dart';
 import '../../auth/application/session_controller.dart';
@@ -82,7 +83,10 @@ class HomePage extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _InfoRow(label: 'Kasir', value: user?.name ?? '-'),
-                          _InfoRow(label: 'Perusahaan', value: tenant?.name ?? '-'),
+                          _InfoRow(
+                            label: ref.watch(appConfigProvider).multiTenant ? 'Perusahaan' : 'Toko',
+                            value: tenant?.name ?? '-',
+                          ),
                           const _OutletRow(),
                         ],
                       ),

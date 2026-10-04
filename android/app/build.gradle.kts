@@ -40,6 +40,28 @@ android {
         manifestPlaceholders["usesCleartextTraffic"] = "false"
     }
 
+    // One codebase, two apps (see README "Variants"): Kagoem POS SaaS and
+    // the single-store pos-cashier backend. Different application ids so
+    // both can be installed on the same device.
+    // Flavors set the app name with resValue (disabled by default in AGP 9).
+    buildFeatures {
+        resValues = true
+    }
+
+    flavorDimensions += "app"
+    productFlavors {
+        create("saas") {
+            dimension = "app"
+            applicationId = "id.kagoem.kagoem_pos_mobile"
+            resValue("string", "app_name", "Kagoem POS")
+        }
+        create("cashier") {
+            dimension = "app"
+            applicationId = "id.kagoem.poscashier"
+            resValue("string", "app_name", "Warung Epon")
+        }
+    }
+
     signingConfigs {
         if (keystoreProperties.containsKey("storeFile")) {
             create("release") {
