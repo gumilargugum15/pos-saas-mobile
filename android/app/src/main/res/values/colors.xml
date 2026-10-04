@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Kagoem web background token, oklch(0.99 0.003 250). -->
+    <color name="launch_background">#FAFCFE</color>
+</resources>

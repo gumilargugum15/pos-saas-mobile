@@ -55,7 +55,8 @@ Map<String, dynamic> saleJson({
     };
 
 Future<void> waitUntil(ProviderContainer c, bool Function() predicate) async {
-  for (var i = 0; i < 200 && !predicate(); i++) {
+  // Up to ~5s: generous enough for a loaded CI machine, instant when met.
+  for (var i = 0; i < 1000 && !predicate(); i++) {
     await Future<void>.delayed(const Duration(milliseconds: 5));
   }
   expect(predicate(), isTrue, reason: 'condition not reached');

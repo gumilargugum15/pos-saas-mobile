@@ -16,13 +16,10 @@ class ProductImage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
-    final placeholder = Container(
+    // Web: "bg-muted" with a package icon when there is no image.
+    final placeholder = ColoredBox(
       color: scheme.surfaceContainerHighest,
-      alignment: Alignment.center,
-      child: Text(
-        product.name.isEmpty ? '?' : product.name.characters.first.toUpperCase(),
-        style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: scheme.onSurfaceVariant),
-      ),
+      child: Center(child: Icon(Icons.inventory_2_outlined, color: scheme.onSurfaceVariant, size: 26)),
     );
     final url = MediaUrl.resolve(product.imageUrl, ref.watch(appConfigProvider).apiBaseUrl);
     final child = url == null
@@ -38,6 +35,7 @@ class ProductImage extends ConsumerWidget {
   }
 }
 
+/// Web stock pill: "{n} stok" on a 10% tint of success / warning / danger.
 class StockBadge extends StatelessWidget {
   const StockBadge({super.key, required this.product});
 
@@ -49,13 +47,19 @@ class StockBadge extends StatelessWidget {
     final (label, color) = product.isOutOfStock
         ? ('Habis', scheme.error)
         : product.isLowStock
-            ? ('Stok ${product.stock}', BrandColors.warning)
-            : ('Stok ${product.stock}', scheme.onSurfaceVariant);
-    return Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 12));
+            ? ('${product.stock} stok', BrandColors.warning)
+            : ('${product.stock} stok', BrandColors.success);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.10), borderRadius: BorderRadius.circular(6)),
+      child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 11)),
+    );
   }
 }
 
-/// Grid tile in the POS catalog. Tap adds to cart; long press shows details.
+/// Catalog card, as in the web POS: "rounded-2xl bg-card border p-3
+/// shadow-soft", image area "rounded-xl bg-muted", SKU, name, primary
+/// price and stock pill. Tap adds to cart; long press shows details.
 class ProductTile extends ConsumerWidget {
   const ProductTile({super.key, required this.product, this.qtyInCart = 0, this.onTap, this.onLongPress});
 
@@ -67,55 +71,79 @@ class ProductTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final disabled = product.isOutOfStock;
+    final selected = qtyInCart > 0;
+    const radius = BorderRadius.all(Radius.circular(KagoemTokens.radius2xl));
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: qtyInCart > 0 ? scheme.primary : scheme.outlineVariant, width: qtyInCart > 0 ? 2 : 1),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        onLongPress: onLongPress,
-        child: Opacity(
-          opacity: disabled ? 0.5 : 1,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    ProductImage(product: product),
-                    if (product.hasDiscount)
-                      Positioned(
-                        left: 6,
-                        top: 6,
-                        child: _Pill('-${formatPercent(product.discountHundredths)}', scheme.error, scheme.onError),
-                      ),
-                    if (qtyInCart > 0)
-                      Positioned(right: 6, top: 6, child: _Pill('×$qtyInCart', scheme.primary, scheme.onPrimary)),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(product.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: textTheme.titleSmall),
-                    const SizedBox(height: 4),
-                    Text(
-                      ref.money(product.price),
-                      style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800, color: scheme.primary),
+    return Opacity(
+      opacity: product.isOutOfStock ? 0.5 : 1,
+      child: Material(
+        color: Theme.of(context).cardTheme.color,
+        elevation: 1,
+        shadowColor: scheme.shadow.withValues(alpha: 0.10),
+        shape: RoundedRectangleBorder(
+          borderRadius: radius,
+          side: BorderSide(color: selected ? scheme.primary : scheme.outlineVariant, width: selected ? 2 : 1),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          onLongPress: onLongPress,
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.all(Radius.circular(KagoemTokens.radiusXl)),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        ProductImage(product: product),
+                        if (product.hasDiscount)
+                          Positioned(
+                            left: 6,
+                            top: 6,
+                            child: _Badge('-${formatPercent(product.discountHundredths)}', scheme.error, scheme.onError),
+                          ),
+                        if (selected)
+                          Positioned(right: 6, top: 6, child: _Badge('×$qtyInCart', scheme.primary, scheme.onPrimary)),
+                      ],
                     ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  product.sku,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 11, fontFamily: 'monospace', color: scheme.onSurfaceVariant),
+                ),
+                Text(
+                  product.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, height: 1.25),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          ref.money(product.price),
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: scheme.primary),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
                     StockBadge(product: product),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -123,8 +151,8 @@ class ProductTile extends ConsumerWidget {
   }
 }
 
-class _Pill extends StatelessWidget {
-  const _Pill(this.text, this.background, this.foreground);
+class _Badge extends StatelessWidget {
+  const _Badge(this.text, this.background, this.foreground);
 
   final String text;
   final Color background;
@@ -132,8 +160,8 @@ class _Pill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(20)),
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+        decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(6)),
         child: Text(text, style: TextStyle(color: foreground, fontWeight: FontWeight.w700, fontSize: 12)),
       );
 }

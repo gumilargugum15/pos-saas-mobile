@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config/app_config.dart';
+import 'kagoem_logo.dart';
 
-/// App logo + name, used on the splash and login screens.
+/// Kagoem logo + wordmark, used on the splash and login screens.
 class BrandMark extends StatelessWidget {
   const BrandMark({super.key, this.size = 72});
 
@@ -15,25 +16,11 @@ class BrandMark extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: scheme.primary,
-            borderRadius: BorderRadius.circular(size * 0.25),
-          ),
-          child: Icon(Icons.point_of_sale_rounded, color: scheme.onPrimary, size: size * 0.55),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'KAGOEM POS',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.5,
-              ),
-        ),
-        const SizedBox(height: 4),
-        Text('Aplikasi Kasir', style: Theme.of(context).textTheme.bodyMedium),
+        KagoemLogoMark(size: size),
+        const SizedBox(height: 20),
+        const KagoemLogo(height: 44, showMark: false),
+        const SizedBox(height: 6),
+        Text('Aplikasi Kasir', style: TextStyle(color: scheme.onSurfaceVariant, fontWeight: FontWeight.w500)),
       ],
     );
   }
@@ -84,7 +71,7 @@ class EnvironmentBadge extends ConsumerWidget {
     if (config.isProduction) return const SizedBox.shrink();
     final scheme = Theme.of(context).colorScheme;
     return Chip(
-      label: Text(config.environment.name.toUpperCase()),
+      label: Text(config.environment == AppEnvironment.development ? 'DEV' : config.environment.name.toUpperCase()),
       backgroundColor: scheme.tertiaryContainer,
       labelStyle: TextStyle(color: scheme.onTertiaryContainer, fontWeight: FontWeight.w700),
       visualDensity: VisualDensity.compact,
