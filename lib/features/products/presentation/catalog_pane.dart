@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/feedback.dart';
 import '../../../domain/entities/product.dart';
 import '../../cart/application/cart_controller.dart';
@@ -103,6 +104,9 @@ class _CatalogPaneState extends ConsumerState<CatalogPane> {
                   autofocus: widget.autofocusSearch,
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
+                    border: _searchBorder(context),
+                    enabledBorder: _searchBorder(context),
+                    focusedBorder: _searchBorder(context, focused: true),
                     hintText: 'Cari nama, SKU, atau barcode',
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: ValueListenableBuilder(
@@ -250,4 +254,13 @@ class _CategoryChips extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Web search box: "h-11 rounded-xl".
+OutlineInputBorder _searchBorder(BuildContext context, {bool focused = false}) {
+  final scheme = Theme.of(context).colorScheme;
+  return OutlineInputBorder(
+    borderRadius: const BorderRadius.all(Radius.circular(KagoemTokens.radiusXl)),
+    borderSide: focused ? BorderSide(color: scheme.primary, width: 1.5) : BorderSide(color: scheme.outlineVariant),
+  );
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/error/app_failure.dart';
 import '../../../core/widgets/common.dart';
+import '../../../core/widgets/kagoem_logo.dart';
 import '../../auth/application/session_controller.dart';
 import '../../outlet/outlet_controller.dart';
 import '../../outlet/outlet_picker.dart';
@@ -35,7 +36,8 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('KAGOEM POS'),
+        // Scales down on narrow phones instead of overflowing.
+        title: const FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: KagoemLogo(height: 32)),
         actions: [
           const EnvironmentBadge(),
           PopupMenuButton<String>(

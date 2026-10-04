@@ -56,7 +56,7 @@ void main() {
 
     await fillLogin(tester);
 
-    expect(find.text('KAGOEM POS'), findsOneWidget);
+    expect(find.text('Kagoem'), findsOneWidget); // logo in the app bar
     expect(find.text('Siti Kasir'), findsOneWidget);
     expect(find.text('Toko ABC'), findsOneWidget);
     expect(find.text('Toko Pusat'), findsOneWidget);

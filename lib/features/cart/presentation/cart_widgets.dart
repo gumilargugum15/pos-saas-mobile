@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/feedback.dart';
 import '../../../domain/entities/cart.dart';
 import '../../settings/settings_providers.dart';
@@ -249,24 +250,76 @@ class CartSummaryBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartControllerProvider);
+    final scheme = Theme.of(context).colorScheme;
+    const radius = BorderRadius.all(Radius.circular(KagoemTokens.radius2xl));
+    // Web mobile cart bar: "rounded-2xl bg-primary px-5 py-3.5 shadow-brand"
+    // with the count in a translucent pill.
     return SafeArea(
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-        child: FilledButton(
-          key: const Key('cart-open'),
-          onPressed: onOpen,
-          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(60)),
-          child: Row(
-            children: [
-              const Icon(Icons.shopping_cart),
-              const SizedBox(width: 12),
-              Text(cart.isEmpty ? 'Keranjang kosong' : '${cart.itemCount} item'),
-              const Spacer(),
-              Text(ref.money(cart.grandTotal)),
-              const SizedBox(width: 8),
-              const Icon(Icons.chevron_right),
-            ],
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            boxShadow: [BoxShadow(color: scheme.primary.withValues(alpha: 0.28), blurRadius: 24, offset: const Offset(0, 8))],
+          ),
+          child: Material(
+            color: scheme.primary,
+            borderRadius: radius,
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              key: const Key('cart-open'),
+              onTap: onOpen,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 60),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  child: DefaultTextStyle.merge(
+                    style: TextStyle(color: scheme.onPrimary, fontWeight: FontWeight.w700, fontSize: 16),
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.20),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.shopping_cart_outlined, size: 18, color: scheme.onPrimary),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    cart.isEmpty ? 'Keranjang kosong' : '${cart.itemCount} item',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              ref.money(cart.grandTotal),
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(Icons.chevron_right, color: scheme.onPrimary),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),
