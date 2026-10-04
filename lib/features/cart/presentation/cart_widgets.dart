@@ -7,6 +7,7 @@ import '../../../core/widgets/feedback.dart';
 import '../../../domain/entities/cart.dart';
 import '../../settings/settings_providers.dart';
 import '../application/cart_controller.dart';
+import 'held_carts_widgets.dart';
 
 /// Lines, totals and the checkout action. Used as the right pane on
 /// tablets and as the body of the cart screen on phones.
@@ -78,11 +79,26 @@ class CartPane extends ConsumerWidget {
         CartTotals(cart: cart),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-          child: FilledButton(
-            key: const Key('cart-checkout'),
-            onPressed: cart.isEmpty ? null : onCheckout,
-            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(60)),
-            child: const Text('CHECKOUT'),
+          child: Row(
+            children: [
+              // Web "Hold": park this cart and serve the next customer.
+              OutlinedButton.icon(
+                key: const Key('cart-hold'),
+                onPressed: cart.isEmpty ? null : () => holdCurrentCart(context, ref),
+                style: OutlinedButton.styleFrom(minimumSize: const Size(0, 60)),
+                icon: const Icon(Icons.pause),
+                label: const Text('TAHAN'),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  key: const Key('cart-checkout'),
+                  onPressed: cart.isEmpty ? null : onCheckout,
+                  style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(60)),
+                  child: const Text('CHECKOUT'),
+                ),
+              ),
+            ],
           ),
         ),
       ],

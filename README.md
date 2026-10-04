@@ -24,6 +24,7 @@ Design and backend analysis: [`docs/`](docs/)
 | 5 | Receipt, Bluetooth thermal printer | Done |
 | 6 | Tests (unit, repository, widget, integration), docs | Done |
 | + | Shift & cash drawer (open, cash in/out, close with count) | Done |
+| + | Hold transaction (park a cart, resume later) | Done |
 
 ## Requirements
 
