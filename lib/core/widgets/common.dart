@@ -5,14 +5,17 @@ import '../config/app_config.dart';
 import 'kagoem_logo.dart';
 
 /// Kagoem logo + wordmark, used on the splash and login screens.
-class BrandMark extends StatelessWidget {
+class BrandMark extends ConsumerWidget {
   const BrandMark({super.key, this.size = 72});
 
   final double size;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
+    final config = ref.watch(appConfigProvider);
+    // The store's own name for single-store builds (e.g. "Warung Epon").
+    final subtitle = config.multiTenant ? 'Aplikasi Kasir' : '${config.appName} · Aplikasi Kasir';
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -20,7 +23,7 @@ class BrandMark extends StatelessWidget {
         const SizedBox(height: 20),
         const KagoemLogo(height: 44, showMark: false),
         const SizedBox(height: 6),
-        Text('Aplikasi Kasir', style: TextStyle(color: scheme.onSurfaceVariant, fontWeight: FontWeight.w500)),
+        Text(subtitle, style: TextStyle(color: scheme.onSurfaceVariant, fontWeight: FontWeight.w500)),
       ],
     );
   }

@@ -5,7 +5,7 @@
          Keystore key and must not be restored onto another device.
          usesCleartextTraffic: true only for debug builds (LAN dev server). -->
     <application
-        android:label="Kagoem POS"
+        android:label="@string/app_name"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
