@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/media_url.dart';
 import '../../../domain/entities/product.dart';
+import '../../auth/application/session_controller.dart';
 import '../../settings/settings_providers.dart';
 
 class ProductImage extends ConsumerWidget {
@@ -217,6 +219,19 @@ class _ProductDetail extends ConsumerWidget {
             row('Stok', product.isOutOfStock ? 'Habis' : '${product.stock}'),
             if (product.hasDiscount) row('Diskon', formatPercent(product.discountHundredths)),
             row('Pajak', formatPercent(product.taxHundredths)),
+            // Admin / Owner only (manage-products).
+            if (ref.watch(cashierCapabilitiesProvider)?.canEditProducts ?? false) ...[
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                key: const Key('product-edit'),
+                onPressed: () {
+                  Navigator.pop(context);
+                  context.push('/products/${product.id}/edit');
+                },
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('Edit Produk'),
+              ),
+            ],
             if (onAdd != null) ...[
               const SizedBox(height: 16),
               FilledButton.icon(

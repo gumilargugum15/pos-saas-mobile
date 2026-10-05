@@ -69,6 +69,7 @@ decision (see PROJECT_ANALYSIS §10).
 | Shift open / current / close / history | `/shifts*` | `tenant.module:sales`, `can:operate-cash-drawer` | `operate-cash-drawer` | ✔ |
 | Shift of another user | `GET /shifts/{id}`, close | in-service | `manage-finance` | ✘ (403) |
 | Cash in / out | `/cash-transactions` | `can:operate-cash-drawer` | `operate-cash-drawer` | ✔ |
+| **Edit product** (incl. photo) | `POST /products/{id}` + `_method=PUT` (multipart) | `can:manage-products`, `tenant.module:products` | `manage-products` (Admin / Owner) | ✘ |
 | Store / receipt settings (read) | `GET /settings` | `auth:sanctum` | none | ✔ |
 
 ## 4. Not in the mobile app at all
@@ -78,7 +79,7 @@ user's permissions:
 
 User Management (`/users`), Role and Permission Management (`/roles`,
 `/permissions`), Tenant provisioning, Settings update (`PUT /settings`),
-Branch and Warehouse CRUD, Product/Category/Brand/Unit CRUD, Suppliers,
+Branch and Warehouse CRUD, product create/delete, Category/Brand/Unit CRUD, Suppliers,
 Purchases, Stock Movements, Reports (`/reports/*`).
 
 ## 5. Gaps between "cashier" intent and backend permissions
@@ -112,6 +113,7 @@ canUseApp        = permissions ∋ 'manage-sales' && tenant.hasModule('sales')
 canCheckout      = permissions ∋ 'manage-sales'
 canCreateCustomer= permissions ∋ 'manage-customers'
 canUseShift      = permissions ∋ 'operate-cash-drawer'
+canEditProducts  = permissions ∋ 'manage-products' && tenant.hasModule('products')
 canRefund        = false   // MVP decision, see §5.1
 tenant.hasModule(m) = tenant.modules == null || tenant.modules ∋ m
 ```

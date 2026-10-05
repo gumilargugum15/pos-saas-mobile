@@ -4,17 +4,17 @@ import 'package:flutter/services.dart';
 /// App-wide messenger, so messages can be cleared from outside a widget.
 final rootMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
-/// Clears transient messages whenever the screen changes: a message from
-/// the previous screen must never sit on top of the next screen's buttons
+/// Clears transient messages when a new screen opens: a message from the
+/// previous screen must never sit on top of the next screen's buttons
 /// (e.g. "added to cart" covering CHECKOUT right after opening the cart).
+///
+/// Not on pop: a result message shown while closing a screen ("Produk
+/// diperbarui", "Pelanggan ditambahkan") belongs to the screen underneath.
 class ClearMessagesOnNavigation extends NavigatorObserver {
   void _clear() => rootMessengerKey.currentState?.hideCurrentSnackBar();
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) => _clear();
-
-  @override
-  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) => _clear();
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) => _clear();
