@@ -4,8 +4,8 @@ import '../../domain/entities/category.dart';
 import '../../domain/entities/dashboard_summary.dart';
 import '../../domain/entities/product.dart';
 
-/// Parses `ProductResource`. `cost_price` is intentionally not mapped: the
-/// cashier UI never needs it.
+/// Parses `ProductResource`. `cost_price` is kept for the product edit form
+/// only; cashier screens never display it.
 abstract final class ProductModel {
   static Product fromJson(Map<String, dynamic> json) => Product(
         id: Json.asInt(json['id']),
@@ -14,7 +14,11 @@ abstract final class ProductModel {
         barcode: _blankToNull(json['barcode']),
         categoryId: Json.asIntOrNull(json['category_id']),
         categoryName: Json.asStringOrNull(json['category_name']),
+        brandId: Json.asIntOrNull(json['brand_id']),
+        brandName: Json.asStringOrNull(json['brand_name']),
+        unitId: Json.asIntOrNull(json['unit_id']),
         unitName: Json.asStringOrNull(json['unit_name']),
+        costPrice: json['cost_price'] == null ? null : Money.fromJson(json['cost_price']),
         price: Money.fromJson(json['price']),
         stock: Json.asInt(json['stock']),
         minStock: Json.asInt(json['min_stock']),
@@ -34,6 +38,9 @@ abstract final class ProductModel {
         'barcode': p.barcode,
         'category_id': p.categoryId,
         'category_name': p.categoryName,
+        'brand_id': p.brandId,
+        'brand_name': p.brandName,
+        'unit_id': p.unitId,
         'unit_name': p.unitName,
         'price': p.price.toDecimalString(),
         'stock': p.stock,

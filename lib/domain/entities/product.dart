@@ -11,7 +11,11 @@ class Product {
     this.barcode,
     this.categoryId,
     this.categoryName,
+    this.brandId,
+    this.brandName,
+    this.unitId,
     this.unitName,
+    this.costPrice,
     this.stock = 0,
     this.minStock = 0,
     this.taxHundredths = 0,
@@ -26,7 +30,14 @@ class Product {
   final String? barcode;
   final int? categoryId;
   final String? categoryName;
+  final int? brandId;
+  final String? brandName;
+  final int? unitId;
   final String? unitName;
+
+  /// Purchase price. Only used by the product edit form (manage-products);
+  /// never shown on cashier screens.
+  final Money? costPrice;
   final Money price;
   final int stock;
   final int minStock;

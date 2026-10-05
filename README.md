@@ -25,6 +25,7 @@ Design and backend analysis: [`docs/`](docs/)
 | 6 | Tests (unit, repository, widget, integration), docs | Done |
 | + | Shift & cash drawer (open, cash in/out, close with count) | Done |
 | + | Hold transaction (park a cart, resume later) | Done |
+| + | Product edit for Admin / Owner (`manage-products`) | Done |
 
 ## Requirements
 

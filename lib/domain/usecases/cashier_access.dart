@@ -6,11 +6,13 @@ abstract final class Permissions {
   static const manageSales = 'manage-sales';
   static const manageCustomers = 'manage-customers';
   static const operateCashDrawer = 'operate-cash-drawer';
+  static const manageProducts = 'manage-products';
 }
 
 /// Plan module keys from the backend `config/plans.php`.
 abstract final class PlanModules {
   static const sales = 'sales';
+  static const products = 'products';
 }
 
 enum AccessDenialReason {
@@ -39,13 +41,19 @@ abstract final class CashierAccess {
 /// Feature toggles inside the app. These only shape the UI; the backend
 /// still authorizes every request (docs/CASHIER_PERMISSION.md §6).
 class CashierCapabilities {
-  const CashierCapabilities(this.user);
+  const CashierCapabilities(this.user, {this.tenant});
 
   final User user;
+  final Tenant? tenant;
 
   bool get canCheckout => user.can(Permissions.manageSales);
   bool get canCreateCustomer => user.can(Permissions.manageCustomers);
   bool get canUseCashDrawer => user.can(Permissions.operateCashDrawer);
+
+  /// Edit products (Admin / Owner): same gate as `PUT /products/{id}` —
+  /// `can:manage-products` + plan module `products`.
+  bool get canEditProducts =>
+      user.can(Permissions.manageProducts) && (tenant?.hasModule(PlanModules.products) ?? true);
 
   /// Allowed by the backend for Kasir, but not part of the mobile MVP (D2).
   bool get canRefund => false;

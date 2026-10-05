@@ -228,5 +228,5 @@ final currentUserProvider = Provider<User?>((ref) => ref.watch(sessionController
 
 final cashierCapabilitiesProvider = Provider<CashierCapabilities?>((ref) {
   final user = ref.watch(currentUserProvider);
-  return user == null ? null : CashierCapabilities(user);
+  return user == null ? null : CashierCapabilities(user, tenant: ref.watch(activeTenantProvider));
 });

@@ -41,7 +41,7 @@ void main() {
       }
     });
 
-    test('the only writes are session, checkout, customer creation and the cash drawer', () {
+    test('the only writes are session, checkout, customers, cash drawer and product edit', () {
       final writes = RegExp(r"_api\.(post|put)\(\s*'([^']+)'");
       final found = {
         for (final s in sources)
@@ -56,6 +56,8 @@ void main() {
         'POST /shifts',
         r'POST /shifts/$shiftId/close',
         'POST /cash-transactions',
+        // Product edit (manage-products, Admin / Owner): multipart + _method=PUT.
+        r'POST /products/$productId',
       });
     });
 

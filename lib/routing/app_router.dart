@@ -17,6 +17,7 @@ import '../features/auth/presentation/login_page.dart';
 import '../features/auth/presentation/splash_page.dart';
 import '../features/dashboard/presentation/home_page.dart';
 import '../features/pos/presentation/pos_page.dart';
+import '../features/products/presentation/product_edit_page.dart';
 import '../features/products/presentation/products_page.dart';
 import '../features/tenant/presentation/tenant_picker_page.dart';
 
@@ -78,7 +79,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(path: 'success', builder: (_, _) => const SaleSuccessPage()),
             ],
           ),
-          GoRoute(path: 'products', builder: (_, _) => const ProductsPage()),
+          GoRoute(
+            path: 'products',
+            builder: (_, _) => const ProductsPage(),
+            routes: [
+              GoRoute(
+                path: ':id/edit',
+                builder: (_, state) => ProductEditPage(productId: int.parse(state.pathParameters['id']!)),
+              ),
+            ],
+          ),
           GoRoute(
             path: 'transactions',
             builder: (_, _) => const TransactionsPage(),
