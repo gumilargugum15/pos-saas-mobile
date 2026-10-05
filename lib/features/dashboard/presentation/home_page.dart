@@ -6,6 +6,7 @@ import '../../../core/error/app_failure.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/kagoem_logo.dart';
+import '../../app_update/update_widgets.dart';
 import '../../auth/application/session_controller.dart';
 import '../../outlet/outlet_controller.dart';
 import '../../outlet/outlet_picker.dart';
@@ -46,6 +47,7 @@ class HomePage extends ConsumerWidget {
             onSelected: (value) => switch (value) {
               'switch' => switchTenantOrNotify(context, ref),
               'printer' => context.push('/printer'),
+              'about' => showAboutApp(context),
               'logout' => _logout(context, ref),
               _ => null,
             },
@@ -58,6 +60,10 @@ class HomePage extends ConsumerWidget {
               const PopupMenuItem(
                 value: 'printer',
                 child: ListTile(leading: Icon(Icons.print), title: Text('Printer Struk')),
+              ),
+              const PopupMenuItem(
+                value: 'about',
+                child: ListTile(leading: Icon(Icons.info_outline), title: Text('Tentang Aplikasi')),
               ),
               const PopupMenuItem(
                 value: 'logout',
@@ -76,6 +82,7 @@ class HomePage extends ConsumerWidget {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
+                  const UpdateBanner(),
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16),

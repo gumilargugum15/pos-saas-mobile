@@ -176,6 +176,21 @@ keyPassword=...
 Without that file the release APK is signed with the debug key — fine for
 internal testing, **not** for distribution.
 
+## Releasing an update (Kagoem POS)
+
+The app checks `GET /api/v1/mobile-app/android` (kagoem-pos-saas
+`MobileAppController`) on launch and shows **"Update tersedia"** on the
+dashboard when the published version is newer than its own `version:`.
+
+1. Bump `version:` in `pubspec.yaml` (e.g. `1.4.0+5`) and build the `saas` flavor.
+2. Copy `build/app/outputs/flutter-apk/app-arm64-v8a-saas-release.apk` to the VPS as
+   `storage/app/private/mobile/android/kagoem-pos.apk`.
+3. On the VPS set `MOBILE_APP_ANDROID_VERSION=1.4.0` in `.env`, then `php artisan config:cache`.
+
+The link is only followed when it is on the API's own host and scheme. Backends
+without the endpoint (pos-cashier) simply show no banner. Menu ⋮ → **Tentang
+Aplikasi** shows the installed version and checks again.
+
 ## Receipt printing
 
 - Pair the Bluetooth thermal printer (58 mm or 80 mm, ESC/POS) in **Android
