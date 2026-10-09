@@ -80,7 +80,7 @@ class ProductChanges {
       };
 }
 
-/// Product editing for users with `manage-products` (Admin / Owner).
+/// Product create / edit for users with `manage-products` (Admin / Owner).
 /// Every method throws `AppFailure` on error.
 class ProductEditRepository {
   ProductEditRepository(this._api);
@@ -101,6 +101,19 @@ class ProductEditRepository {
       body: form,
       parse: (d) => ProductModel.fromJson(Json.asMap(d)),
     );
+    return response.data;
+  }
+
+  /// `POST /products` (multipart, like the web admin). An empty barcode is
+  /// left out: the backend then generates a unique one. On kagoem-pos-saas
+  /// the plan's product limit applies (422 PLAN_LIMIT_REACHED).
+  Future<Product> create(ProductChanges product) async {
+    final form = FormData.fromMap({
+      ...product.toFields(),
+      if (product.imagePath != null)
+        'image': await MultipartFile.fromFile(product.imagePath!, filename: product.imagePath!.split('/').last),
+    });
+    final response = await _api.post('/products', body: form, parse: (d) => ProductModel.fromJson(Json.asMap(d)));
     return response.data;
   }
 

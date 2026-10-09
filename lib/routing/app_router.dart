@@ -83,6 +83,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: 'products',
             builder: (_, _) => const ProductsPage(),
             routes: [
+              GoRoute(path: 'new', builder: (_, _) => const ProductCreatePage()),
               GoRoute(
                 path: ':id/edit',
                 builder: (_, state) => ProductEditPage(productId: int.parse(state.pathParameters['id']!)),

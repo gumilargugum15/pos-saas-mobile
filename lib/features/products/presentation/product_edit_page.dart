@@ -65,22 +65,61 @@ class ProductEditPage extends ConsumerWidget {
   }
 }
 
+/// New product (Admin / Owner): the same form, starting from the web
+/// admin's defaults (tax 11%, stock 0, active). Prices start empty so a
+/// product is never saved at Rp 0 by accident.
+class ProductCreatePage extends ConsumerWidget {
+  const ProductCreatePage({super.key});
+
+  static const blank = Product(
+    id: 0,
+    name: '',
+    sku: '',
+    price: Money.zero(),
+    costPrice: Money.zero(),
+    taxHundredths: 1100,
+  );
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final allowed = ref.watch(cashierCapabilitiesProvider)?.canEditProducts ?? false;
+    return Scaffold(
+      appBar: AppBar(title: const Text('Tambah Produk')),
+      body: SafeArea(
+        child: allowed
+            ? const _ProductForm(product: blank, creating: true)
+            : const StatusView(icon: Icons.lock_outline, message: 'Anda tidak memiliki akses untuk menambah produk.'),
+      ),
+    );
+  }
+}
+
 class _ProductForm extends ConsumerStatefulWidget {
-  const _ProductForm({required this.product});
+  const _ProductForm({required this.product, this.creating = false});
 
   final Product product;
+  final bool creating;
 
   @override
   ConsumerState<_ProductForm> createState() => _ProductFormState();
 }
+
+/// Request fields that have an input on the form; other server errors
+/// (e.g. the plan's product limit) are shown as a banner instead.
+const _formFields = {
+  'name', 'sku', 'barcode', 'category_id', 'brand_id', 'unit_id', 'price', 'cost_price', 'stock',
+  'min_stock', 'tax_percentage', 'discount_percentage', 'is_active', 'image',
+};
 
 class _ProductFormState extends ConsumerState<_ProductForm> {
   final _formKey = GlobalKey<FormState>();
   late final _name = TextEditingController(text: widget.product.name);
   late final _sku = TextEditingController(text: widget.product.sku);
   late final _barcode = TextEditingController(text: widget.product.barcode ?? '');
-  late final _price = TextEditingController(text: _rupiah(widget.product.price));
-  late final _cost = TextEditingController(text: _rupiah(widget.product.costPrice ?? const Money.zero()));
+  late final _price = TextEditingController(text: widget.creating ? '' : _rupiah(widget.product.price));
+  late final _cost = TextEditingController(
+    text: widget.creating ? '' : _rupiah(widget.product.costPrice ?? const Money.zero()),
+  );
   late final _stock = TextEditingController(text: '${widget.product.stock}');
   late final _minStock = TextEditingController(text: '${widget.product.minStock}');
   late final _tax = TextEditingController(text: _percentText(widget.product.taxHundredths));
@@ -115,6 +154,32 @@ class _ProductFormState extends ConsumerState<_ProductForm> {
     }
     super.dispose();
   }
+
+  /// Everything the backend requires for a new product (barcode only when
+  /// typed; otherwise the server generates one).
+  ProductChanges _newProduct() {
+    final barcode = _barcode.text.trim();
+    return ProductChanges(
+      name: _name.text.trim(),
+      sku: _sku.text.trim(),
+      barcode: barcode.isEmpty ? null : barcode,
+      categoryId: _categoryId,
+      brandId: _brandId,
+      unitId: _unitId,
+      priceRupiah: parseRupiahInput(_price.text),
+      costPriceRupiah: parseRupiahInput(_cost.text),
+      stock: int.tryParse(_stock.text),
+      minStock: int.tryParse(_minStock.text),
+      taxPercent: _tax.text.trim().replaceAll(',', '.'),
+      discountPercent: _discount.text.trim().replaceAll(',', '.'),
+      isActive: _active,
+      imagePath: _photoPath,
+    );
+  }
+
+  bool get _isDirty => widget.creating
+      ? [_name, _sku, _barcode, _price, _cost].any((c) => c.text.trim().isNotEmpty) || _photoPath != null
+      : !_changes().isEmpty;
 
   ProductChanges _changes() {
     final p = widget.product;
@@ -158,6 +223,7 @@ class _ProductFormState extends ConsumerState<_ProductForm> {
 
   Future<void> _save() async {
     if (_saving || !_formKey.currentState!.validate()) return;
+    if (widget.creating) return _create();
     final changes = _changes();
     if (changes.isEmpty) {
       Navigator.of(context).pop();
@@ -183,6 +249,24 @@ class _ProductFormState extends ConsumerState<_ProductForm> {
     }
   }
 
+  Future<void> _create() async {
+    setState(() {
+      _saving = true;
+      _failure = null;
+    });
+    try {
+      final created = await ref.read(productEditRepositoryProvider).create(_newProduct());
+      ref.invalidate(catalogControllerProvider);
+      if (!mounted) return;
+      showQuickMessage(context, 'Produk ${created.name} ditambahkan.');
+      Navigator.of(context).pop(created);
+    } on AppFailure catch (f) {
+      if (mounted) setState(() => _failure = f);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
   /// Server-side field errors (unique SKU/barcode, missing category…) in
   /// Indonesian; Laravel's built-in messages are English.
   String? _serverError(String field, String label) {
@@ -193,12 +277,12 @@ class _ProductFormState extends ConsumerState<_ProductForm> {
   }
 
   Future<bool> _confirmDiscard() async {
-    if (_changes().isEmpty) return true;
+    if (!_isDirty) return true;
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Buang perubahan?'),
-        content: const Text('Perubahan pada produk ini belum disimpan.'),
+        content: Text(widget.creating ? 'Produk baru ini belum disimpan.' : 'Perubahan pada produk ini belum disimpan.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Lanjut Edit')),
           FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Buang')),
@@ -292,7 +376,7 @@ class _ProductFormState extends ConsumerState<_ProductForm> {
                           ),
                         ),
                       const SizedBox(height: 16),
-                      if (_failure != null && _failure!.fieldErrors.isEmpty) ...[
+                      if (_failure != null && !_failure!.fieldErrors.keys.any(_formFields.contains)) ...[
                         MessageBanner(_failure!.message),
                         const SizedBox(height: 12),
                       ],
@@ -323,6 +407,7 @@ class _ProductFormState extends ConsumerState<_ProductForm> {
                               keyboardType: TextInputType.number,
                               decoration: InputDecoration(
                                 labelText: 'Barcode',
+                                helperText: widget.creating ? 'Kosong = dibuat otomatis' : null,
                                 errorText: _serverError('barcode', 'Barcode'),
                               ),
                             ),
